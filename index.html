@@ -1,0 +1,285 @@
+<title>Floraricci</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+  :root{
+    --ground:#FAF6F5; --surface:#FFFFFF; --surface-2:#F5ECEC;
+    --ink:#29181F; --muted:#8A7076; --line:#E9DBDA;
+    --accent:#A6324F; --accent-ink:#7C2138; --accent-soft:#F2DBE0;
+    --good:#2F7D5B; --good-soft:#DEEDE4;
+    --warn:#B07326; --warn-soft:#F4E6CF;
+    --shadow:0 1px 2px rgba(41,24,31,.04),0 8px 24px rgba(41,24,31,.06);
+    --radius:14px;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --ground:#191014; --surface:#241820; --surface-2:#2E1F28;
+      --ink:#F6E9EC; --muted:#B899A2; --line:#3A2A32;
+      --accent:#E88BA0; --accent-ink:#F3B7C4; --accent-soft:#3A2029;
+      --good:#82C9A2; --good-soft:#213329;
+      --warn:#DFAE6C; --warn-soft:#33281A;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#191014; --surface:#241820; --surface-2:#2E1F28;
+    --ink:#F6E9EC; --muted:#B899A2; --line:#3A2A32;
+    --accent:#E88BA0; --accent-ink:#F3B7C4; --accent-soft:#3A2029;
+    --good:#82C9A2; --good-soft:#213329;
+    --warn:#DFAE6C; --warn-soft:#33281A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .app{display:grid; grid-template-columns:288px 1fr; min-height:100vh}
+
+  /* ---------- Sidebar ---------- */
+  .side{
+    border-right:1px solid var(--line); background:var(--surface);
+    display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  }
+  .brand{padding:26px 24px 18px; border-bottom:1px solid var(--line)}
+  .brand .mark{
+    font-family:Fraunces,Georgia,serif; font-weight:900; font-size:27px;
+    letter-spacing:-.01em; line-height:1; color:var(--ink);
+  }
+  .brand .mark span{color:var(--accent)}
+  .brand .sub{
+    margin-top:6px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); font-weight:600;
+  }
+  .search{padding:14px 16px 6px}
+  .search input{
+    width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px;
+    background:var(--ground); color:var(--ink); font:inherit; font-size:13.5px;
+  }
+  .search input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+  .count{padding:8px 20px 4px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .tabs{list-style:none; margin:0; padding:6px 12px 20px; overflow-y:auto; flex:1}
+  .tab{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    padding:11px 12px; border:none; background:transparent; color:var(--ink);
+    font:inherit; font-size:14.5px; font-weight:500; border-radius:10px; cursor:pointer;
+    transition:background .12s ease;
+  }
+  .tab:hover{background:var(--surface-2)}
+  .tab .dot{width:7px; height:7px; border-radius:50%; background:var(--line); flex:none}
+  .tab.pend .dot{background:var(--warn)}
+  .tab.paid .dot{background:var(--good)}
+  .tab[aria-selected="true"]{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+  .tab .tname{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .tab .tdate{font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .tab[aria-selected="true"] .tdate{color:var(--accent-ink); opacity:.75}
+
+  /* ---------- Main ---------- */
+  .main{padding:40px clamp(20px,5vw,64px) 72px; max-width:920px}
+  .rec-head{display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:6px}
+  .rec-name{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:clamp(30px,5vw,44px); letter-spacing:-.015em; margin:0; text-wrap:balance}
+  .rec-meta{margin-top:6px; color:var(--muted); font-size:13.5px}
+  .rec-meta b{color:var(--ink); font-weight:600}
+  .pill{
+    display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px;
+    font-size:13px; font-weight:600; white-space:nowrap;
+  }
+  .pill::before{content:""; width:8px; height:8px; border-radius:50%; background:currentColor}
+  .pill.paid{background:var(--good-soft); color:var(--good)}
+  .pill.pend{background:var(--warn-soft); color:var(--warn)}
+
+  section.block{margin-top:34px}
+  .block > h2{
+    font-family:Inter; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:12px;
+  }
+  .block > h2::after{content:""; flex:1; height:1px; background:var(--line)}
+
+  .fields{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line);
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+  .field{background:var(--surface); padding:14px 16px}
+  .field.full{grid-column:1/-1}
+  .field .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:4px}
+  .field .v{font-size:15.5px; color:var(--ink); font-weight:500; overflow-wrap:anywhere}
+  .field .v.num{font-variant-numeric:tabular-nums}
+  .field .v.empty{color:var(--muted); font-weight:400; font-style:italic}
+
+  /* products */
+  .prod{display:flex; align-items:center; gap:14px; background:var(--surface); padding:14px 16px}
+  .prod + .prod{border-top:1px solid var(--line)}
+  .prod .qty{
+    flex:none; min-width:38px; height:38px; padding:0 8px; border-radius:10px; background:var(--accent-soft); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-variant-numeric:tabular-nums; font-size:15px;
+  }
+  .prod .pname{font-weight:500; overflow-wrap:anywhere}
+  .prodwrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+
+  /* money cards */
+  .money{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  .mcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow)}
+  .mcard .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .mcard .v{margin-top:8px; font-family:Fraunces,Georgia,serif; font-size:26px; font-weight:500; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+  .mcard.hi{background:var(--accent);border-color:var(--accent)}
+  .mcard.hi .k{color:#fff; opacity:.85}
+  .mcard.hi .v{color:#fff}
+
+  .note{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+    border-radius:12px; padding:16px 18px; color:var(--ink); overflow-wrap:anywhere}
+
+  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; color:var(--muted); height:60vh; gap:8px}
+  .empty-state .big{font-family:Fraunces,serif; font-size:24px; color:var(--ink)}
+
+  .foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted)}
+
+  /* theme toggle */
+  .tgl{margin:auto 16px 16px; display:flex; align-items:center; gap:8px; padding:9px 12px;
+    border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--muted);
+    font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
+  .tgl:hover{color:var(--ink); background:var(--surface-2)}
+
+  @media (max-width:760px){
+    .app{grid-template-columns:1fr}
+    .side{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line)}
+    .tabs{max-height:38vh}
+    .money{grid-template-columns:1fr}
+    .fields{grid-template-columns:1fr}
+    .tgl{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">Flora<span>ricci</span></div>
+      <div class="sub">Registro de Clientes</div>
+    </div>
+    <div class="search"><input id="q" type="search" placeholder="Buscar cliente…" autocomplete="off"></div>
+    <div class="count" id="count"></div>
+    <ul class="tabs" id="tabs" role="tablist"></ul>
+    <button class="tgl" id="tgl">◐ Alternar tema</button>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const HEADER = ["Data Venda","Cliente","Produto 01","Qnt P1","Produto 02","Qnt P2","Produto 03","Qnt P3","Produto 04","Qnt P4","Outro produto?","Peças","Valor de Fabrica","Valor da venda (manual)","Lucro","Forma","Parcelas","Valor p/parcela","Observações","Via de Venda","PAGO?"];
+const ROWS = [
+["30/08/2026","Mãe de Miss","Conjunto Casual Fit Manga longa","7","Informe o produto","","Informe o produto","","Informe o produto","","5 calças extra (R$575) +R$30 matriz bordado","7","R$ 840,00","R$ 2.215,00","R$ 1.375,00","Crédito","5","R$ 443,00"," x1 R$1107,50 de entrada. Todo dia 30 cobrar parcela","Instagram","FALSE"]
+];
+const UPDATED = "30/08/2026";
+
+// ---- helpers ----
+const idx = n => HEADER.indexOf(n);
+const val = (r,n) => (r[idx(n)]||"").trim();
+const isBlank = v => !v || v==="" || /^informe o produto$/i.test(v) || v==="-";
+const clean = v => isBlank(v) ? "" : v;
+const isPaid = r => /true|sim|pago/i.test(val(r,"PAGO?"));
+
+// records = rows with a client name
+const RECORDS = ROWS.map((r,i)=>({r,i})).filter(o=>val(o.r,"Cliente")!=="");
+
+const tabsEl = document.getElementById('tabs');
+const mainEl = document.getElementById('main');
+const countEl = document.getElementById('count');
+const qEl = document.getElementById('q');
+let selected = RECORDS.length ? RECORDS[0].i : null;
+let filter = "";
+
+function field(label, value, {full=false,num=false}={}){
+  const v = clean(value);
+  const cls = ['v']; if(num) cls.push('num'); if(!v) cls.push('empty');
+  return `<div class="field${full?' full':''}"><div class="k">${esc(label)}</div><div class="${cls.join(' ')}">${v?esc(v):'—'}</div></div>`;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function renderTabs(){
+  const list = RECORDS.filter(o=>val(o.r,"Cliente").toLowerCase().includes(filter));
+  countEl.textContent = `${list.length} ${list.length===1?'cliente':'clientes'}`;
+  tabsEl.innerHTML = list.map(o=>{
+    const name = val(o.r,"Cliente");
+    const paid = isPaid(o.r);
+    return `<li role="presentation"><button class="tab ${paid?'paid':'pend'}" role="tab" data-i="${o.i}" aria-selected="${o.i===selected}">
+      <span class="dot"></span><span class="tname">${esc(name)}</span><span class="tdate">${esc(val(o.r,'Data Venda'))}</span>
+    </button></li>`;
+  }).join('') || `<li style="padding:14px;color:var(--muted);font-size:13px">Nenhum cliente encontrado.</li>`;
+  tabsEl.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{selected=+b.dataset.i; renderTabs(); renderMain();});
+}
+
+function renderMain(){
+  if(selected===null){ mainEl.innerHTML = `<div class="empty-state"><div class="big">Nenhum registro</div><div>A planilha ainda não tem clientes preenchidos.</div></div>`; return; }
+  const r = ROWS[selected];
+  const paid = isPaid(r);
+
+  // products
+  const prods=[];
+  for(let n=1;n<=4;n++){ const p=val(r,`Produto 0${n}`), q=val(r,`Qnt P${n}`); if(!isBlank(p)) prods.push({p,q}); }
+  const outro = val(r,"Outro produto?");
+  const prodRows = prods.map(x=>`<div class="prod"><div class="qty">${esc(clean(x.q)||'—')}</div><div class="pname">${esc(x.p)}</div></div>`).join('');
+  const outroRow = !isBlank(outro) ? `<div class="prod"><div class="qty" style="background:var(--surface-2);color:var(--muted)">＋</div><div class="pname">${esc(outro)}</div></div>` : '';
+
+  mainEl.innerHTML = `
+    <div class="rec-head">
+      <div>
+        <h1 class="rec-name">${esc(val(r,'Cliente'))}</h1>
+        <div class="rec-meta">Venda em <b>${esc(val(r,'Data Venda')||'—')}</b> · via <b>${esc(clean(val(r,'Via de Venda'))||'—')}</b></div>
+      </div>
+      <span class="pill ${paid?'paid':'pend'}">${paid?'Pago':'Pagamento pendente'}</span>
+    </div>
+
+    <section class="block">
+      <h2>Produtos · ${esc(val(r,'Peças')||prods.length)} peças</h2>
+      <div class="prodwrap">${prodRows||outroRow ? prodRows+outroRow : '<div class="prod"><div class="pname" style="color:var(--muted)">Sem produtos informados</div></div>'}</div>
+    </section>
+
+    <section class="block">
+      <h2>Valores</h2>
+      <div class="money">
+        <div class="mcard"><div class="k">Valor de fábrica</div><div class="v">${esc(clean(val(r,'Valor de Fabrica'))||'—')}</div></div>
+        <div class="mcard"><div class="k">Valor da venda</div><div class="v">${esc(clean(val(r,'Valor da venda (manual)'))||'—')}</div></div>
+        <div class="mcard hi"><div class="k">Lucro</div><div class="v">${esc(clean(val(r,'Lucro'))||'—')}</div></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Pagamento</h2>
+      <div class="fields">
+        ${field('Forma', val(r,'Forma'))}
+        ${field('Parcelas', val(r,'Parcelas'), {num:true})}
+        ${field('Valor por parcela', val(r,'Valor p/parcela'), {num:true})}
+        ${field('Situação', paid?'Pago':'Pendente')}
+      </div>
+    </section>
+
+    ${!isBlank(val(r,'Observações')) ? `
+    <section class="block">
+      <h2>Observações</h2>
+      <div class="note">${esc(val(r,'Observações').trim())}</div>
+    </section>`:''}
+
+    <div class="foot">Dados importados da planilha Floraricci · atualizado em ${esc(UPDATED)}</div>
+  `;
+  mainEl.scrollTop = 0;
+}
+
+qEl.addEventListener('input', e=>{ filter=e.target.value.toLowerCase().trim(); renderTabs(); });
+
+// theme toggle
+const root=document.documentElement, tgl=document.getElementById('tgl');
+try{const t=localStorage.getItem('flora-theme'); if(t)root.setAttribute('data-theme',t);}catch(e){}
+tgl.onclick=()=>{
+  const cur = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  const next = cur==='dark'?'light':'dark';
+  root.setAttribute('data-theme',next);
+  try{localStorage.setItem('flora-theme',next);}catch(e){}
+};
+
+renderTabs(); renderMain();
+</script>
