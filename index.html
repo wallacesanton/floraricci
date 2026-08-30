@@ -11,6 +11,7 @@
     --accent:#A6324F; --accent-ink:#7C2138; --accent-soft:#F2DBE0;
     --good:#2F7D5B; --good-soft:#DEEDE4;
     --warn:#B07326; --warn-soft:#F4E6CF;
+    --bad:#B23B3B;
     --shadow:0 1px 2px rgba(41,24,31,.04),0 8px 24px rgba(41,24,31,.06);
     --radius:14px;
   }
@@ -21,6 +22,7 @@
       --accent:#E88BA0; --accent-ink:#F3B7C4; --accent-soft:#3A2029;
       --good:#82C9A2; --good-soft:#213329;
       --warn:#DFAE6C; --warn-soft:#33281A;
+      --bad:#E88;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
     }
   }
@@ -30,6 +32,7 @@
     --accent:#E88BA0; --accent-ink:#F3B7C4; --accent-soft:#3A2029;
     --good:#82C9A2; --good-soft:#213329;
     --warn:#DFAE6C; --warn-soft:#33281A;
+    --bad:#E88;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
   }
 
@@ -42,38 +45,44 @@
   }
   .app{display:grid; grid-template-columns:288px 1fr; min-height:100vh}
 
+  /* ---------- Login gate ---------- */
+  .gate{position:fixed; inset:0; z-index:50; background:var(--ground);
+    display:flex; align-items:center; justify-content:center; padding:24px}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:20px;
+    box-shadow:var(--shadow); padding:38px 34px; width:100%; max-width:380px; text-align:center;
+    display:flex; flex-direction:column; gap:6px}
+  .gate-mark{font-family:Fraunces,Georgia,serif; font-weight:900; font-size:34px; letter-spacing:-.01em; color:var(--ink); line-height:1}
+  .gate-mark span{color:var(--accent)}
+  .gate-sub{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:22px}
+  .gate-label{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left}
+  .gate-input{width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:11px;
+    background:var(--ground); color:var(--ink); font:inherit; font-size:16px; letter-spacing:.04em; margin-top:6px}
+  .gate-input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+  .gate-btn{margin-top:16px; width:100%; padding:12px; border:none; border-radius:11px; cursor:pointer;
+    background:var(--accent); color:#fff; font:inherit; font-weight:600; font-size:15px}
+  .gate-btn:hover{background:var(--accent-ink)}
+  .gate-btn:disabled{opacity:.55; cursor:default}
+  .gate-err{min-height:18px; margin-top:12px; font-size:13px; color:var(--bad); font-weight:500}
+  .gate-hint{margin-top:4px; font-size:11.5px; color:var(--muted)}
+
   /* ---------- Sidebar ---------- */
-  .side{
-    border-right:1px solid var(--line); background:var(--surface);
-    display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
-  }
+  .side{border-right:1px solid var(--line); background:var(--surface);
+    display:flex; flex-direction:column; position:sticky; top:0; height:100vh}
   .brand{padding:26px 24px 18px; border-bottom:1px solid var(--line)}
-  .brand .mark{
-    font-family:Fraunces,Georgia,serif; font-weight:900; font-size:27px;
-    letter-spacing:-.01em; line-height:1; color:var(--ink);
-  }
+  .brand .mark{font-family:Fraunces,Georgia,serif; font-weight:900; font-size:27px; letter-spacing:-.01em; line-height:1; color:var(--ink)}
   .brand .mark span{color:var(--accent)}
-  .brand .sub{
-    margin-top:6px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--muted); font-weight:600;
-  }
+  .brand .sub{margin-top:6px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600}
   .search{padding:14px 16px 6px}
-  .search input{
-    width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px;
-    background:var(--ground); color:var(--ink); font:inherit; font-size:13.5px;
-  }
+  .search input{width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px;
+    background:var(--ground); color:var(--ink); font:inherit; font-size:13.5px}
   .search input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
   .count{padding:8px 20px 4px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:8px}
   .refresh{border:none; background:transparent; color:var(--accent); cursor:pointer; font:inherit; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 4px; border-radius:6px}
   .refresh:hover{background:var(--accent-soft)}
   .refresh.spin{opacity:.5; pointer-events:none}
   .tabs{list-style:none; margin:0; padding:6px 12px 20px; overflow-y:auto; flex:1}
-  .tab{
-    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-    padding:11px 12px; border:none; background:transparent; color:var(--ink);
-    font:inherit; font-size:14.5px; font-weight:500; border-radius:10px; cursor:pointer;
-    transition:background .12s ease;
-  }
+  .tab{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:11px 12px; border:none;
+    background:transparent; color:var(--ink); font:inherit; font-size:14.5px; font-weight:500; border-radius:10px; cursor:pointer; transition:background .12s ease}
   .tab:hover{background:var(--surface-2)}
   .tab .dot{width:7px; height:7px; border-radius:50%; background:var(--line); flex:none}
   .tab.pend .dot{background:var(--warn)}
@@ -82,6 +91,10 @@
   .tab .tname{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .tab .tdate{font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
   .tab[aria-selected="true"] .tdate{color:var(--accent-ink); opacity:.75}
+  .sidefoot{border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:8px}
+  .sidefoot button{flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 10px;
+    border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--muted); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
+  .sidefoot button:hover{color:var(--ink); background:var(--surface-2)}
 
   /* ---------- Main ---------- */
   .main{padding:40px clamp(20px,5vw,64px) 72px; max-width:920px}
@@ -89,65 +102,41 @@
   .rec-name{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:clamp(30px,5vw,44px); letter-spacing:-.015em; margin:0; text-wrap:balance}
   .rec-meta{margin-top:6px; color:var(--muted); font-size:13.5px}
   .rec-meta b{color:var(--ink); font-weight:600}
-  .pill{
-    display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px;
-    font-size:13px; font-weight:600; white-space:nowrap;
-  }
+  .pill{display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap}
   .pill::before{content:""; width:8px; height:8px; border-radius:50%; background:currentColor}
   .pill.paid{background:var(--good-soft); color:var(--good)}
   .pill.pend{background:var(--warn-soft); color:var(--warn)}
 
   section.block{margin-top:34px}
-  .block > h2{
-    font-family:Inter; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--accent); font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:12px;
-  }
+  .block > h2{font-family:Inter; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:12px}
   .block > h2::after{content:""; flex:1; height:1px; background:var(--line)}
-
-  .fields{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line);
-    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+  .fields{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
   .field{background:var(--surface); padding:14px 16px}
   .field.full{grid-column:1/-1}
   .field .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:4px}
   .field .v{font-size:15.5px; color:var(--ink); font-weight:500; overflow-wrap:anywhere}
   .field .v.num{font-variant-numeric:tabular-nums}
   .field .v.empty{color:var(--muted); font-weight:400; font-style:italic}
-
   .prod{display:flex; align-items:center; gap:14px; background:var(--surface); padding:14px 16px}
   .prod + .prod{border-top:1px solid var(--line)}
-  .prod .qty{
-    flex:none; min-width:38px; height:38px; padding:0 8px; border-radius:10px; background:var(--accent-soft); color:var(--accent-ink);
-    display:flex; align-items:center; justify-content:center; font-weight:700; font-variant-numeric:tabular-nums; font-size:15px;
-  }
+  .prod .qty{flex:none; min-width:38px; height:38px; padding:0 8px; border-radius:10px; background:var(--accent-soft); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-weight:700; font-variant-numeric:tabular-nums; font-size:15px}
   .prod .pname{font-weight:500; overflow-wrap:anywhere}
   .prodwrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
-
   .money{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
   .mcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow)}
   .mcard .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
   .mcard .v{margin-top:8px; font-family:Fraunces,Georgia,serif; font-size:26px; font-weight:500; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
-  .mcard.hi{background:var(--accent);border-color:var(--accent)}
+  .mcard.hi{background:var(--accent); border-color:var(--accent)}
   .mcard.hi .k{color:#fff; opacity:.85}
   .mcard.hi .v{color:#fff}
-
-  .note{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
-    border-radius:12px; padding:16px 18px; color:var(--ink); overflow-wrap:anywhere}
-
-  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; color:var(--muted); height:60vh; gap:10px; padding:20px}
+  .note{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:12px; padding:16px 18px; color:var(--ink); overflow-wrap:anywhere}
+  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--muted); height:60vh; gap:10px; padding:20px}
   .empty-state .big{font-family:Fraunces,serif; font-size:24px; color:var(--ink)}
-  .empty-state button{margin-top:6px; border:1px solid var(--accent); background:var(--accent); color:#fff;
-    font:inherit; font-weight:600; padding:9px 18px; border-radius:10px; cursor:pointer}
+  .empty-state button{margin-top:6px; border:1px solid var(--accent); background:var(--accent); color:#fff; font:inherit; font-weight:600; padding:9px 18px; border-radius:10px; cursor:pointer}
   .spinner{width:26px; height:26px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-
   .foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted)}
   .foot .live{color:var(--good); font-weight:600}
-
-  .tgl{margin:auto 16px 16px; display:flex; align-items:center; gap:8px; padding:9px 12px;
-    border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--muted);
-    font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
-  .tgl:hover{color:var(--ink); background:var(--surface-2)}
 
   @media (max-width:760px){
     .app{grid-template-columns:1fr}
@@ -155,12 +144,25 @@
     .tabs{max-height:38vh}
     .money{grid-template-columns:1fr}
     .fields{grid-template-columns:1fr}
-    .tgl{display:none}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
 
-<div class="app">
+<!-- Login gate -->
+<div class="gate" id="gate">
+  <form class="gate-card" id="gateForm" autocomplete="off">
+    <div class="gate-mark">Flora<span>ricci</span></div>
+    <div class="gate-sub">Acesso restrito</div>
+    <label class="gate-label" for="gateInput">Senha de acesso</label>
+    <input class="gate-input" id="gateInput" type="password" inputmode="text" autocomplete="off" placeholder="Digite o token">
+    <button class="gate-btn" id="gateBtn" type="submit">Entrar</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-hint">O conteúdo só é carregado com a senha correta.</div>
+  </form>
+</div>
+
+<!-- App -->
+<div class="app" id="appRoot" style="display:none">
   <aside class="side">
     <div class="brand">
       <div class="mark">Flora<span>ricci</span></div>
@@ -169,62 +171,56 @@
     <div class="search"><input id="q" type="search" placeholder="Buscar cliente…" autocomplete="off"></div>
     <div class="count"><span id="count">Carregando…</span><button class="refresh" id="refresh" title="Atualizar da planilha">↻ Atualizar</button></div>
     <ul class="tabs" id="tabs" role="tablist"></ul>
-    <button class="tgl" id="tgl">◐ Alternar tema</button>
+    <div class="sidefoot">
+      <button id="tgl">◐ Tema</button>
+      <button id="logout">⎋ Sair</button>
+    </div>
   </aside>
-  <main class="main" id="main">
-    <div class="empty-state"><div class="spinner"></div><div>Buscando dados da planilha…</div></div>
-  </main>
+  <main class="main" id="main"></main>
 </div>
 
 <script>
-const SHEET_ID = "1x5XJAjg10VsEMKv72NyiesXoJiPyA-CkO0ZdhqIKcac";
-const GID = "0";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbwxQWm0pFcI3fDXF8SN3f6rmQBiyDGXvA_xB_Ovpg9YfnVZTKV9LjgjeQkMs74uLpQW/exec";
+const LS_KEY = "flora-token";
 
 let HEADER = [];
 let ROWS = [];
 let RECORDS = [];
-let selected = null;      // index into ROWS
-let selectedName = null;  // remembered across refreshes
+let selected = null;
+let selectedName = null;
 let filter = "";
+let TOKEN_VALUE = null;
 
+const gateEl   = document.getElementById('gate');
+const gateForm = document.getElementById('gateForm');
+const gateInput= document.getElementById('gateInput');
+const gateBtn  = document.getElementById('gateBtn');
+const gateErr  = document.getElementById('gateErr');
+const appRoot  = document.getElementById('appRoot');
 const tabsEl   = document.getElementById('tabs');
 const mainEl   = document.getElementById('main');
 const countEl  = document.getElementById('count');
 const qEl      = document.getElementById('q');
 const refreshEl= document.getElementById('refresh');
 
-// ---------- data (JSONP against Google gviz — works cross-origin) ----------
-function loadData(){
+// ---------- data (JSONP against the Apps Script proxy) ----------
+function fetchData(token){
   return new Promise((resolve, reject)=>{
     const cb = 'floraCB_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
     let done = false;
     const s = document.createElement('script');
-    const to = setTimeout(()=>{ if(!done){ cleanup(); reject(new Error('timeout')); } }, 15000);
-    function cleanup(){ done = true; clearTimeout(to); try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); }
-    window[cb] = (resp)=>{ try{ const d = parse(resp); cleanup(); resolve(d); }catch(e){ cleanup(); reject(e); } };
+    const to = setTimeout(()=>{ if(!done){ cleanup(); reject(new Error('timeout')); } }, 20000);
+    function cleanup(){ done=true; clearTimeout(to); try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); }
+    window[cb] = (resp)=>{ cleanup(); resolve(resp); };
     s.onerror = ()=>{ if(!done){ cleanup(); reject(new Error('network')); } };
-    s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&headers=1&gid=${GID}&_=${Date.now()}`;
+    s.src = PROXY_URL + '?token=' + encodeURIComponent(token) + '&callback=' + cb + '&_=' + Date.now();
     document.head.appendChild(s);
   });
-}
-function parse(resp){
-  const t = resp.table;
-  const header = (t.cols||[]).map(c => (c.label||'').trim());
-  const rows = (t.rows||[]).map(r => (r.c||[]).map(cell=>{
-    if(cell==null) return '';
-    if(typeof cell.v === 'boolean') return cell.v ? 'TRUE' : 'FALSE';
-    if(cell.f != null) return String(cell.f);
-    if(cell.v != null) return String(cell.v);
-    return '';
-  }));
-  // pad short rows to header length
-  rows.forEach(r=>{ while(r.length < header.length) r.push(''); });
-  return { header, rows };
 }
 
 // ---------- helpers ----------
 const idx = n => HEADER.indexOf(n);
-const val = (r,n) => { const i = idx(n); return i>=0 ? (r[i]||'').trim() : ''; };
+const val = (r,n) => { const i = idx(n); return i>=0 ? String(r[i]==null?'':r[i]).trim() : ''; };
 const isBlank = v => !v || v==='' || /^informe o produto$/i.test(v) || v==='-';
 const clean = v => isBlank(v) ? '' : v;
 const isPaid = r => /^(true|verdadeiro|sim|pago|paid|x)$/i.test(val(r,'PAGO?'));
@@ -270,12 +266,10 @@ function renderMain(){
       </div>
       <span class="pill ${paid?'paid':'pend'}">${paid?'Pago':'Pagamento pendente'}</span>
     </div>
-
     <section class="block">
       <h2>Produtos · ${esc(val(r,'Peças')||prods.length)} peças</h2>
       <div class="prodwrap">${(prodRows||outroRow) ? prodRows+outroRow : '<div class="prod"><div class="pname" style="color:var(--muted)">Sem produtos informados</div></div>'}</div>
     </section>
-
     <section class="block">
       <h2>Valores</h2>
       <div class="money">
@@ -284,7 +278,6 @@ function renderMain(){
         <div class="mcard hi"><div class="k">Lucro</div><div class="v">${esc(clean(val(r,'Lucro'))||'—')}</div></div>
       </div>
     </section>
-
     <section class="block">
       <h2>Pagamento</h2>
       <div class="fields">
@@ -294,23 +287,20 @@ function renderMain(){
         ${field('Situação', paid?'Pago':'Pendente')}
       </div>
     </section>
-
     ${!isBlank(val(r,'Observações')) ? `
     <section class="block">
       <h2>Observações</h2>
       <div class="note">${esc(val(r,'Observações').trim())}</div>
     </section>`:''}
-
-    <div class="foot"><span class="live">● ao vivo</span> · dados lidos direto da planilha Floraricci · atualizado às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+    <div class="foot"><span class="live">● ao vivo</span> · planilha privada · atualizado às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
   `;
   mainEl.scrollTop = 0;
 }
 
 function applyData(d){
-  HEADER = d.header;
-  ROWS = d.rows;
+  HEADER = d.header || [];
+  ROWS = (d.rows || []).filter(r=>Array.isArray(r));
   RECORDS = ROWS.map((r,i)=>({r,i})).filter(o=>val(o.r,'Cliente')!=='');
-  // keep the previously selected client if it still exists, else first
   if(selectedName){
     const found = RECORDS.find(o=>val(o.r,'Cliente')===selectedName);
     selected = found ? found.i : (RECORDS[0] ? RECORDS[0].i : null);
@@ -324,27 +314,72 @@ function applyData(d){
 function showError(){
   countEl.textContent = 'erro';
   mainEl.innerHTML = `<div class="empty-state">
-    <div class="big">Não consegui ler a planilha</div>
-    <div>Verifique se ela continua compartilhada como "qualquer pessoa com o link".</div>
+    <div class="big">Não consegui carregar</div>
+    <div>Verifique sua conexão e tente de novo.</div>
     <button onclick="reloadData()">Tentar de novo</button>
   </div>`;
 }
 
 let loading = false;
 function reloadData(){
-  if(loading) return;
+  if(loading || !TOKEN_VALUE) return;
   loading = true; refreshEl.classList.add('spin');
-  loadData()
-    .then(applyData)
+  fetchData(TOKEN_VALUE)
+    .then(resp=>{
+      if(resp && resp.error === 'unauthorized'){ doLogout('A senha mudou. Entre novamente.'); return; }
+      applyData(resp || {});
+    })
     .catch(err=>{ console.error(err); showError(); })
     .finally(()=>{ loading=false; refreshEl.classList.remove('spin'); });
 }
 window.reloadData = reloadData;
 
+// ---------- auth ----------
+function enterApp(token, resp){
+  TOKEN_VALUE = token;
+  try{ localStorage.setItem(LS_KEY, token); }catch(e){}
+  gateEl.style.display = 'none';
+  appRoot.style.display = 'grid';
+  applyData(resp);
+}
+function doLogout(msg){
+  TOKEN_VALUE = null;
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  HEADER=[]; ROWS=[]; RECORDS=[]; selected=null; selectedName=null;
+  appRoot.style.display = 'none';
+  gateEl.style.display = 'flex';
+  gateErr.textContent = msg || '';
+  gateInput.value = '';
+  gateBtn.disabled = false; gateBtn.textContent = 'Entrar';
+  setTimeout(()=>gateInput.focus(), 50);
+}
+
+function attempt(token){
+  return fetchData(token).then(resp=>{
+    if(!resp || resp.error){ return { ok:false }; }
+    return { ok:true, resp };
+  });
+}
+
+gateForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const token = gateInput.value.trim();
+  if(!token) return;
+  gateErr.textContent = '';
+  gateBtn.disabled = true; gateBtn.textContent = 'Verificando…';
+  attempt(token)
+    .then(res=>{
+      if(res.ok){ enterApp(token, res.resp); }
+      else { gateErr.textContent = 'Senha incorreta.'; gateBtn.disabled=false; gateBtn.textContent='Entrar'; gateInput.select(); }
+    })
+    .catch(()=>{ gateErr.textContent = 'Falha de conexão. Tente de novo.'; gateBtn.disabled=false; gateBtn.textContent='Entrar'; });
+});
+
+// ---------- UI wiring ----------
 qEl.addEventListener('input', e=>{ filter=e.target.value.toLowerCase().trim(); renderTabs(); });
 refreshEl.addEventListener('click', reloadData);
+document.getElementById('logout').addEventListener('click', ()=>doLogout(''));
 
-// theme toggle
 const root=document.documentElement, tgl=document.getElementById('tgl');
 try{const t=localStorage.getItem('flora-theme'); if(t)root.setAttribute('data-theme',t);}catch(e){}
 tgl.onclick=()=>{
@@ -354,5 +389,18 @@ tgl.onclick=()=>{
   try{localStorage.setItem('flora-theme',next);}catch(e){}
 };
 
-reloadData(); // initial load
+// ---------- boot: try saved token, else show login ----------
+(function boot(){
+  let saved=null;
+  try{ saved = localStorage.getItem(LS_KEY); }catch(e){}
+  if(saved){
+    gateBtn.disabled=true; gateBtn.textContent='Verificando…';
+    attempt(saved).then(res=>{
+      if(res.ok){ enterApp(saved, res.resp); }
+      else { doLogout(''); }
+    }).catch(()=>{ doLogout(''); });
+  } else {
+    setTimeout(()=>gateInput.focus(), 60);
+  }
+})();
 </script>
