@@ -63,6 +63,8 @@
   .gate-btn:hover{background:var(--accent-ink)}
   .gate-btn:disabled{opacity:.55; cursor:default}
   .gate-err{min-height:18px; margin-top:12px; font-size:13px; color:var(--bad); font-weight:500}
+  .gate-remember{display:flex; align-items:center; gap:9px; margin-top:16px; font-size:13px; color:var(--ink); cursor:pointer; text-align:left; user-select:none}
+  .gate-remember input{width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex:none}
   .gate-hint{margin-top:4px; font-size:11.5px; color:var(--muted)}
 
   /* ---------- Sidebar ---------- */
@@ -155,6 +157,7 @@
     <div class="gate-sub">Acesso restrito</div>
     <label class="gate-label" for="gateInput">Senha de acesso</label>
     <input class="gate-input" id="gateInput" type="password" inputmode="text" autocomplete="off" placeholder="Digite o token">
+    <label class="gate-remember"><input type="checkbox" id="gateRemember" checked> Salvar neste dispositivo por 5 dias</label>
     <button class="gate-btn" id="gateBtn" type="submit">Entrar</button>
     <div class="gate-err" id="gateErr"></div>
     <div class="gate-hint">O conteúdo só é carregado com a senha correta.</div>
@@ -182,6 +185,7 @@
 <script>
 const PROXY_URL = "https://script.google.com/macros/s/AKfycbwxQWm0pFcI3fDXF8SN3f6rmQBiyDGXvA_xB_Ovpg9YfnVZTKV9LjgjeQkMs74uLpQW/exec";
 const LS_KEY = "flora-token";
+const REMEMBER_DAYS = 5;
 
 let HEADER = [];
 let ROWS = [];
@@ -202,6 +206,7 @@ const mainEl   = document.getElementById('main');
 const countEl  = document.getElementById('count');
 const qEl      = document.getElementById('q');
 const refreshEl= document.getElementById('refresh');
+const gateRemember = document.getElementById('gateRemember');
 
 // ---------- data (JSONP against the Apps Script proxy) ----------
 function fetchData(token){
@@ -335,16 +340,43 @@ function reloadData(){
 window.reloadData = reloadData;
 
 // ---------- auth ----------
-function enterApp(token, resp){
+function saveToken(token){
+  clearToken();
+  const remember = gateRemember && gateRemember.checked;
+  try{
+    if(remember){
+      localStorage.setItem(LS_KEY, JSON.stringify({ token, exp: Date.now() + REMEMBER_DAYS*86400000 }));
+    } else {
+      sessionStorage.setItem(LS_KEY, JSON.stringify({ token }));
+    }
+  }catch(e){}
+}
+function loadToken(){
+  try{
+    const l = localStorage.getItem(LS_KEY);
+    if(l){ const o = JSON.parse(l); if(o && o.token){ if(o.exp && Date.now() > o.exp){ localStorage.removeItem(LS_KEY); } else { return o.token; } } }
+  }catch(e){}
+  try{
+    const s = sessionStorage.getItem(LS_KEY);
+    if(s){ const o = JSON.parse(s); if(o && o.token) return o.token; }
+  }catch(e){}
+  return null;
+}
+function clearToken(){
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  try{ sessionStorage.removeItem(LS_KEY); }catch(e){}
+}
+
+function enterApp(token, resp, persist){
   TOKEN_VALUE = token;
-  try{ localStorage.setItem(LS_KEY, token); }catch(e){}
+  if(persist) saveToken(token);
   gateEl.style.display = 'none';
   appRoot.style.display = 'grid';
   applyData(resp);
 }
 function doLogout(msg){
   TOKEN_VALUE = null;
-  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  clearToken();
   HEADER=[]; ROWS=[]; RECORDS=[]; selected=null; selectedName=null;
   appRoot.style.display = 'none';
   gateEl.style.display = 'flex';
@@ -369,7 +401,7 @@ gateForm.addEventListener('submit', e=>{
   gateBtn.disabled = true; gateBtn.textContent = 'Verificando…';
   attempt(token)
     .then(res=>{
-      if(res.ok){ enterApp(token, res.resp); }
+      if(res.ok){ enterApp(token, res.resp, true); }
       else { gateErr.textContent = 'Senha incorreta.'; gateBtn.disabled=false; gateBtn.textContent='Entrar'; gateInput.select(); }
     })
     .catch(()=>{ gateErr.textContent = 'Falha de conexão. Tente de novo.'; gateBtn.disabled=false; gateBtn.textContent='Entrar'; });
@@ -391,12 +423,11 @@ tgl.onclick=()=>{
 
 // ---------- boot: try saved token, else show login ----------
 (function boot(){
-  let saved=null;
-  try{ saved = localStorage.getItem(LS_KEY); }catch(e){}
+  const saved = loadToken();
   if(saved){
     gateBtn.disabled=true; gateBtn.textContent='Verificando…';
     attempt(saved).then(res=>{
-      if(res.ok){ enterApp(saved, res.resp); }
+      if(res.ok){ enterApp(saved, res.resp, false); }
       else { doLogout(''); }
     }).catch(()=>{ doLogout(''); });
   } else {
