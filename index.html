@@ -326,12 +326,12 @@ function showError(){
   mainEl.innerHTML = `<div class="empty-state">
     <div class="big">Não consegui ler a planilha</div>
     <div>Verifique se ela continua compartilhada como "qualquer pessoa com o link".</div>
-    <button onclick="refresh()">Tentar de novo</button>
+    <button onclick="reloadData()">Tentar de novo</button>
   </div>`;
 }
 
 let loading = false;
-function refresh(){
+function reloadData(){
   if(loading) return;
   loading = true; refreshEl.classList.add('spin');
   loadData()
@@ -339,9 +339,10 @@ function refresh(){
     .catch(err=>{ console.error(err); showError(); })
     .finally(()=>{ loading=false; refreshEl.classList.remove('spin'); });
 }
+window.reloadData = reloadData;
 
 qEl.addEventListener('input', e=>{ filter=e.target.value.toLowerCase().trim(); renderTabs(); });
-refreshEl.addEventListener('click', refresh);
+refreshEl.addEventListener('click', reloadData);
 
 // theme toggle
 const root=document.documentElement, tgl=document.getElementById('tgl');
@@ -353,4 +354,4 @@ tgl.onclick=()=>{
   try{localStorage.setItem('flora-theme',next);}catch(e){}
 };
 
-refresh(); // initial load
+reloadData(); // initial load
