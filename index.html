@@ -63,7 +63,10 @@
     background:var(--ground); color:var(--ink); font:inherit; font-size:13.5px;
   }
   .search input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
-  .count{padding:8px 20px 4px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .count{padding:8px 20px 4px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .refresh{border:none; background:transparent; color:var(--accent); cursor:pointer; font:inherit; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 4px; border-radius:6px}
+  .refresh:hover{background:var(--accent-soft)}
+  .refresh.spin{opacity:.5; pointer-events:none}
   .tabs{list-style:none; margin:0; padding:6px 12px 20px; overflow-y:auto; flex:1}
   .tab{
     display:flex; align-items:center; gap:10px; width:100%; text-align:left;
@@ -110,7 +113,6 @@
   .field .v.num{font-variant-numeric:tabular-nums}
   .field .v.empty{color:var(--muted); font-weight:400; font-style:italic}
 
-  /* products */
   .prod{display:flex; align-items:center; gap:14px; background:var(--surface); padding:14px 16px}
   .prod + .prod{border-top:1px solid var(--line)}
   .prod .qty{
@@ -120,7 +122,6 @@
   .prod .pname{font-weight:500; overflow-wrap:anywhere}
   .prodwrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
 
-  /* money cards */
   .money{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
   .mcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow)}
   .mcard .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
@@ -133,12 +134,16 @@
     border-radius:12px; padding:16px 18px; color:var(--ink); overflow-wrap:anywhere}
 
   .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; color:var(--muted); height:60vh; gap:8px}
+    text-align:center; color:var(--muted); height:60vh; gap:10px; padding:20px}
   .empty-state .big{font-family:Fraunces,serif; font-size:24px; color:var(--ink)}
+  .empty-state button{margin-top:6px; border:1px solid var(--accent); background:var(--accent); color:#fff;
+    font:inherit; font-weight:600; padding:9px 18px; border-radius:10px; cursor:pointer}
+  .spinner{width:26px; height:26px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   .foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted)}
+  .foot .live{color:var(--good); font-weight:600}
 
-  /* theme toggle */
   .tgl{margin:auto 16px 16px; display:flex; align-items:center; gap:8px; padding:9px 12px;
     border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--muted);
     font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
@@ -152,7 +157,7 @@
     .fields{grid-template-columns:1fr}
     .tgl{display:none}
   }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
 
 <div class="app">
@@ -162,66 +167,98 @@
       <div class="sub">Registro de Clientes</div>
     </div>
     <div class="search"><input id="q" type="search" placeholder="Buscar cliente…" autocomplete="off"></div>
-    <div class="count" id="count"></div>
+    <div class="count"><span id="count">Carregando…</span><button class="refresh" id="refresh" title="Atualizar da planilha">↻ Atualizar</button></div>
     <ul class="tabs" id="tabs" role="tablist"></ul>
     <button class="tgl" id="tgl">◐ Alternar tema</button>
   </aside>
-  <main class="main" id="main"></main>
+  <main class="main" id="main">
+    <div class="empty-state"><div class="spinner"></div><div>Buscando dados da planilha…</div></div>
+  </main>
 </div>
 
 <script>
-const HEADER = ["Data Venda","Cliente","Produto 01","Qnt P1","Produto 02","Qnt P2","Produto 03","Qnt P3","Produto 04","Qnt P4","Outro produto?","Peças","Valor de Fabrica","Valor da venda (manual)","Lucro","Forma","Parcelas","Valor p/parcela","Observações","Via de Venda","PAGO?"];
-const ROWS = [
-["30/08/2026","Mãe de Miss","Conjunto Casual Fit Manga longa","7","Informe o produto","","Informe o produto","","Informe o produto","","5 calças extra (R$575) +R$30 matriz bordado","7","R$ 840,00","R$ 2.215,00","R$ 1.375,00","Crédito","5","R$ 443,00"," x1 R$1107,50 de entrada. Todo dia 30 cobrar parcela","Instagram","TRUE"]
-];
-const UPDATED = "30/08/2026";
+const SHEET_ID = "1x5XJAjg10VsEMKv72NyiesXoJiPyA-CkO0ZdhqIKcac";
+const GID = "0";
 
-// ---- helpers ----
-const idx = n => HEADER.indexOf(n);
-const val = (r,n) => (r[idx(n)]||"").trim();
-const isBlank = v => !v || v==="" || /^informe o produto$/i.test(v) || v==="-";
-const clean = v => isBlank(v) ? "" : v;
-const isPaid = r => /true|sim|pago/i.test(val(r,"PAGO?"));
-
-// records = rows with a client name
-const RECORDS = ROWS.map((r,i)=>({r,i})).filter(o=>val(o.r,"Cliente")!=="");
-
-const tabsEl = document.getElementById('tabs');
-const mainEl = document.getElementById('main');
-const countEl = document.getElementById('count');
-const qEl = document.getElementById('q');
-let selected = RECORDS.length ? RECORDS[0].i : null;
+let HEADER = [];
+let ROWS = [];
+let RECORDS = [];
+let selected = null;      // index into ROWS
+let selectedName = null;  // remembered across refreshes
 let filter = "";
 
+const tabsEl   = document.getElementById('tabs');
+const mainEl   = document.getElementById('main');
+const countEl  = document.getElementById('count');
+const qEl      = document.getElementById('q');
+const refreshEl= document.getElementById('refresh');
+
+// ---------- data (JSONP against Google gviz — works cross-origin) ----------
+function loadData(){
+  return new Promise((resolve, reject)=>{
+    const cb = 'floraCB_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+    let done = false;
+    const s = document.createElement('script');
+    const to = setTimeout(()=>{ if(!done){ cleanup(); reject(new Error('timeout')); } }, 15000);
+    function cleanup(){ done = true; clearTimeout(to); try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); }
+    window[cb] = (resp)=>{ try{ const d = parse(resp); cleanup(); resolve(d); }catch(e){ cleanup(); reject(e); } };
+    s.onerror = ()=>{ if(!done){ cleanup(); reject(new Error('network')); } };
+    s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&headers=1&gid=${GID}&_=${Date.now()}`;
+    document.head.appendChild(s);
+  });
+}
+function parse(resp){
+  const t = resp.table;
+  const header = (t.cols||[]).map(c => (c.label||'').trim());
+  const rows = (t.rows||[]).map(r => (r.c||[]).map(cell=>{
+    if(cell==null) return '';
+    if(typeof cell.v === 'boolean') return cell.v ? 'TRUE' : 'FALSE';
+    if(cell.f != null) return String(cell.f);
+    if(cell.v != null) return String(cell.v);
+    return '';
+  }));
+  // pad short rows to header length
+  rows.forEach(r=>{ while(r.length < header.length) r.push(''); });
+  return { header, rows };
+}
+
+// ---------- helpers ----------
+const idx = n => HEADER.indexOf(n);
+const val = (r,n) => { const i = idx(n); return i>=0 ? (r[i]||'').trim() : ''; };
+const isBlank = v => !v || v==='' || /^informe o produto$/i.test(v) || v==='-';
+const clean = v => isBlank(v) ? '' : v;
+const isPaid = r => /^(true|verdadeiro|sim|pago|paid|x)$/i.test(val(r,'PAGO?'));
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function field(label, value, {full=false,num=false}={}){
   const v = clean(value);
   const cls = ['v']; if(num) cls.push('num'); if(!v) cls.push('empty');
   return `<div class="field${full?' full':''}"><div class="k">${esc(label)}</div><div class="${cls.join(' ')}">${v?esc(v):'—'}</div></div>`;
 }
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
+// ---------- render ----------
 function renderTabs(){
-  const list = RECORDS.filter(o=>val(o.r,"Cliente").toLowerCase().includes(filter));
+  const list = RECORDS.filter(o=>val(o.r,'Cliente').toLowerCase().includes(filter));
   countEl.textContent = `${list.length} ${list.length===1?'cliente':'clientes'}`;
   tabsEl.innerHTML = list.map(o=>{
-    const name = val(o.r,"Cliente");
+    const name = val(o.r,'Cliente');
     const paid = isPaid(o.r);
     return `<li role="presentation"><button class="tab ${paid?'paid':'pend'}" role="tab" data-i="${o.i}" aria-selected="${o.i===selected}">
       <span class="dot"></span><span class="tname">${esc(name)}</span><span class="tdate">${esc(val(o.r,'Data Venda'))}</span>
     </button></li>`;
   }).join('') || `<li style="padding:14px;color:var(--muted);font-size:13px">Nenhum cliente encontrado.</li>`;
-  tabsEl.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{selected=+b.dataset.i; renderTabs(); renderMain();});
+  tabsEl.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ selected=+b.dataset.i; selectedName=val(ROWS[selected],'Cliente'); renderTabs(); renderMain(); });
 }
 
 function renderMain(){
-  if(selected===null){ mainEl.innerHTML = `<div class="empty-state"><div class="big">Nenhum registro</div><div>A planilha ainda não tem clientes preenchidos.</div></div>`; return; }
+  if(selected===null || !ROWS[selected]){
+    mainEl.innerHTML = `<div class="empty-state"><div class="big">Nenhum cliente</div><div>A planilha ainda não tem clientes preenchidos.</div></div>`;
+    return;
+  }
   const r = ROWS[selected];
   const paid = isPaid(r);
-
-  // products
   const prods=[];
   for(let n=1;n<=4;n++){ const p=val(r,`Produto 0${n}`), q=val(r,`Qnt P${n}`); if(!isBlank(p)) prods.push({p,q}); }
-  const outro = val(r,"Outro produto?");
+  const outro = val(r,'Outro produto?');
   const prodRows = prods.map(x=>`<div class="prod"><div class="qty">${esc(clean(x.q)||'—')}</div><div class="pname">${esc(x.p)}</div></div>`).join('');
   const outroRow = !isBlank(outro) ? `<div class="prod"><div class="qty" style="background:var(--surface-2);color:var(--muted)">＋</div><div class="pname">${esc(outro)}</div></div>` : '';
 
@@ -236,7 +273,7 @@ function renderMain(){
 
     <section class="block">
       <h2>Produtos · ${esc(val(r,'Peças')||prods.length)} peças</h2>
-      <div class="prodwrap">${prodRows||outroRow ? prodRows+outroRow : '<div class="prod"><div class="pname" style="color:var(--muted)">Sem produtos informados</div></div>'}</div>
+      <div class="prodwrap">${(prodRows||outroRow) ? prodRows+outroRow : '<div class="prod"><div class="pname" style="color:var(--muted)">Sem produtos informados</div></div>'}</div>
     </section>
 
     <section class="block">
@@ -264,12 +301,47 @@ function renderMain(){
       <div class="note">${esc(val(r,'Observações').trim())}</div>
     </section>`:''}
 
-    <div class="foot">Dados importados da planilha Floraricci · atualizado em ${esc(UPDATED)}</div>
+    <div class="foot"><span class="live">● ao vivo</span> · dados lidos direto da planilha Floraricci · atualizado às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
   `;
   mainEl.scrollTop = 0;
 }
 
+function applyData(d){
+  HEADER = d.header;
+  ROWS = d.rows;
+  RECORDS = ROWS.map((r,i)=>({r,i})).filter(o=>val(o.r,'Cliente')!=='');
+  // keep the previously selected client if it still exists, else first
+  if(selectedName){
+    const found = RECORDS.find(o=>val(o.r,'Cliente')===selectedName);
+    selected = found ? found.i : (RECORDS[0] ? RECORDS[0].i : null);
+  } else {
+    selected = RECORDS[0] ? RECORDS[0].i : null;
+  }
+  if(selected!==null) selectedName = val(ROWS[selected],'Cliente');
+  renderTabs(); renderMain();
+}
+
+function showError(){
+  countEl.textContent = 'erro';
+  mainEl.innerHTML = `<div class="empty-state">
+    <div class="big">Não consegui ler a planilha</div>
+    <div>Verifique se ela continua compartilhada como "qualquer pessoa com o link".</div>
+    <button onclick="refresh()">Tentar de novo</button>
+  </div>`;
+}
+
+let loading = false;
+function refresh(){
+  if(loading) return;
+  loading = true; refreshEl.classList.add('spin');
+  loadData()
+    .then(applyData)
+    .catch(err=>{ console.error(err); showError(); })
+    .finally(()=>{ loading=false; refreshEl.classList.remove('spin'); });
+}
+
 qEl.addEventListener('input', e=>{ filter=e.target.value.toLowerCase().trim(); renderTabs(); });
+refreshEl.addEventListener('click', refresh);
 
 // theme toggle
 const root=document.documentElement, tgl=document.getElementById('tgl');
@@ -281,5 +353,4 @@ tgl.onclick=()=>{
   try{localStorage.setItem('flora-theme',next);}catch(e){}
 };
 
-renderTabs(); renderMain();
-</script>
+refresh(); // initial load
