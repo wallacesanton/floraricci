@@ -238,11 +238,11 @@
         </div>
         <div class="calc-mid" id="cMid"></div>
         <div class="calc-result">
-          <div class="calc-result-k">Custo do tecido no produto</div>
+          <div class="calc-result-k">Preço do metro <span style="opacity:.75;font-weight:500">— R$ por metro</span></div>
           <div class="calc-result-v" id="cResult">—</div>
           <button class="calc-copy" id="cCopy">Copiar valor</button>
         </div>
-        <p class="calc-note"><b>Como calcula:</b> Valor do kg × Metros × Peso por metro. Ex.: R$ 60 × 0,5 m × 0,600 kg/m = <b>R$ 18,00</b>.<br>Acima também mostro o <b>preço do metro</b> (valor do kg × peso por metro) como referência.</p>
+        <p class="calc-note"><b>Como calcula:</b> Valor do kg × Peso por metro (igual à planilha). Ex.: R$ 60 × 0,990 kg/m = <b>R$ 59,40</b>.<br>Acima mostro também o <b>custo no produto</b> (preço do metro × metros usados), caso queira precificar a peça.</p>
       </div>
     </div>
   </main>
@@ -506,14 +506,14 @@ function fmtKg(n){ return isFinite(n) ? n.toLocaleString('pt-BR',{minimumFractio
 let cLast = '';
 function calc(){
   const kg=parseNum(cValor.value), m=parseNum(cMetros.value), pm=parseNum(cPeso.value);
-  const precoMetro = kg * pm;
-  const pesoUsado  = m * pm;
-  const custo      = kg * m * pm;
+  const precoMetro   = kg * pm;         // resultado principal (igual à planilha: preço kg × peso por metro)
+  const custoProduto = precoMetro * m;  // extra: usa os metros
+  const pesoUsado    = m * pm;
   cMid.innerHTML =
-    `<div class="mcard"><div class="k">Preço do metro</div><div class="v">${fmtBRL(precoMetro)}<span class="unit">/m</span></div></div>`+
+    `<div class="mcard"><div class="k">Custo no produto <span class="unit">(× metros)</span></div><div class="v">${fmtBRL(custoProduto)}</div></div>`+
     `<div class="mcard"><div class="k">Peso usado no produto</div><div class="v">${fmtKg(pesoUsado)}<span class="unit">kg</span></div></div>`;
-  cResult.textContent = fmtBRL(custo);
-  cLast = isFinite(custo) ? custo.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+  cResult.textContent = fmtBRL(precoMetro);
+  cLast = isFinite(precoMetro) ? precoMetro.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
 }
 [cValor,cMetros,cPeso].forEach(el=>el.addEventListener('input', calc));
 cCopy.addEventListener('click', ()=>{
