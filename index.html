@@ -140,12 +140,43 @@
   .foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted)}
   .foot .live{color:var(--good); font-weight:600}
 
+  /* ---------- Nav (Clientes / Tecido) ---------- */
+  .nav{display:flex; gap:6px; padding:12px 16px 4px}
+  .navitem{flex:1; padding:9px 8px; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--muted); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .12s ease}
+  .navitem:hover{background:var(--surface-2); color:var(--ink)}
+  .navitem[aria-selected="true"]{background:var(--accent-soft); color:var(--accent-ink); border-color:transparent}
+  #clientesNav{display:contents}
+
+  /* ---------- Calculadora de tecido ---------- */
+  .calc{max-width:640px}
+  .calc-title{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:clamp(28px,4.5vw,40px); letter-spacing:-.015em; margin:0}
+  .calc-intro{color:var(--muted); font-size:14px; margin:8px 0 30px; max-width:52ch}
+  .calc-grid{display:flex; flex-direction:column; gap:18px}
+  .calc-field{display:block}
+  .calc-k{display:block; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:8px}
+  .calc-k em{font-style:normal; opacity:.75; text-transform:none; letter-spacing:0; font-weight:500}
+  .calc-inwrap{display:flex; align-items:stretch; border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden}
+  .calc-inwrap:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .calc-affix{padding:0 15px; color:var(--muted); font-weight:600; font-size:15px; background:var(--surface-2); display:flex; align-items:center}
+  .calc-in{flex:1; border:none; background:transparent; color:var(--ink); font:inherit; font-size:18px; padding:13px 14px; font-variant-numeric:tabular-nums; min-width:0}
+  .calc-in:focus{outline:none}
+  .calc-mid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:26px 0 10px}
+  .calc-mid .mcard .v{font-size:22px}
+  .calc-mid .unit{font-size:13px; color:var(--muted); font-weight:600; font-family:Inter; margin-left:3px}
+  .calc-result{margin-top:14px; background:var(--accent); border-color:var(--accent); border-radius:var(--radius); padding:22px 26px; color:#fff; box-shadow:var(--shadow)}
+  .calc-result-k{font-size:12px; letter-spacing:.08em; text-transform:uppercase; opacity:.85; font-weight:600}
+  .calc-result-v{font-family:Fraunces,Georgia,serif; font-size:clamp(34px,6vw,44px); font-weight:600; font-variant-numeric:tabular-nums; margin-top:6px; letter-spacing:-.01em; line-height:1}
+  .calc-copy{margin-top:16px; border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff; font:inherit; font-weight:600; font-size:13px; padding:8px 16px; border-radius:9px; cursor:pointer}
+  .calc-copy:hover{background:rgba(255,255,255,.24)}
+  .calc-note{margin-top:22px; font-size:12.5px; color:var(--muted); line-height:1.6}
+
   @media (max-width:760px){
     .app{grid-template-columns:1fr}
     .side{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line)}
     .tabs{max-height:38vh}
     .money{grid-template-columns:1fr}
     .fields{grid-template-columns:1fr}
+    .calc-mid{grid-template-columns:1fr}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
@@ -171,15 +202,50 @@
       <div class="mark">Flora<span>ricci</span></div>
       <div class="sub">Registro de Clientes</div>
     </div>
-    <div class="search"><input id="q" type="search" placeholder="Buscar cliente…" autocomplete="off"></div>
-    <div class="count"><span id="count">Carregando…</span><button class="refresh" id="refresh" title="Atualizar da planilha">↻ Atualizar</button></div>
-    <ul class="tabs" id="tabs" role="tablist"></ul>
+    <nav class="nav">
+      <button class="navitem" data-view="clientes" aria-selected="true">Clientes</button>
+      <button class="navitem" data-view="tecido" aria-selected="false">Valor do Tecido</button>
+    </nav>
+    <div id="clientesNav">
+      <div class="search"><input id="q" type="search" placeholder="Buscar cliente…" autocomplete="off"></div>
+      <div class="count"><span id="count">Carregando…</span><button class="refresh" id="refresh" title="Atualizar da planilha">↻ Atualizar</button></div>
+      <ul class="tabs" id="tabs" role="tablist"></ul>
+    </div>
     <div class="sidefoot">
       <button id="tgl">◐ Tema</button>
       <button id="logout">⎋ Sair</button>
     </div>
   </aside>
-  <main class="main" id="main"></main>
+  <main class="main">
+    <div id="viewClientes"></div>
+    <div id="viewTecido" style="display:none">
+      <div class="calc">
+        <h1 class="calc-title">Valor do Tecido</h1>
+        <p class="calc-intro">Descubra o custo do tecido a partir do valor por quilo e do peso do tecido. Use vírgula para decimais (ex.: 0,600).</p>
+        <div class="calc-grid">
+          <label class="calc-field">
+            <span class="calc-k">Valor do tecido <em>— R$ por kg</em></span>
+            <div class="calc-inwrap"><span class="calc-affix">R$</span><input id="cValor" class="calc-in" type="text" inputmode="decimal" autocomplete="off" placeholder="60"></div>
+          </label>
+          <label class="calc-field">
+            <span class="calc-k">Metros usados no produto <em>— m</em></span>
+            <div class="calc-inwrap"><input id="cMetros" class="calc-in" type="text" inputmode="decimal" autocomplete="off" placeholder="0,5"><span class="calc-affix">m</span></div>
+          </label>
+          <label class="calc-field">
+            <span class="calc-k">Peso por metro <em>— kg/m</em></span>
+            <div class="calc-inwrap"><input id="cPeso" class="calc-in" type="text" inputmode="decimal" autocomplete="off" placeholder="0,600" value="0,600"><span class="calc-affix">kg</span></div>
+          </label>
+        </div>
+        <div class="calc-mid" id="cMid"></div>
+        <div class="calc-result">
+          <div class="calc-result-k">Custo do tecido no produto</div>
+          <div class="calc-result-v" id="cResult">—</div>
+          <button class="calc-copy" id="cCopy">Copiar valor</button>
+        </div>
+        <p class="calc-note"><b>Como calcula:</b> Valor do kg × Metros × Peso por metro. Ex.: R$ 60 × 0,5 m × 0,600 kg/m = <b>R$ 18,00</b>.<br>Acima também mostro o <b>preço do metro</b> (valor do kg × peso por metro) como referência.</p>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script>
@@ -202,7 +268,7 @@ const gateBtn  = document.getElementById('gateBtn');
 const gateErr  = document.getElementById('gateErr');
 const appRoot  = document.getElementById('appRoot');
 const tabsEl   = document.getElementById('tabs');
-const mainEl   = document.getElementById('main');
+const mainEl   = document.getElementById('viewClientes');
 const countEl  = document.getElementById('count');
 const qEl      = document.getElementById('q');
 const refreshEl= document.getElementById('refresh');
@@ -411,6 +477,52 @@ gateForm.addEventListener('submit', e=>{
 qEl.addEventListener('input', e=>{ filter=e.target.value.toLowerCase().trim(); renderTabs(); });
 refreshEl.addEventListener('click', reloadData);
 document.getElementById('logout').addEventListener('click', ()=>doLogout(''));
+
+// ---------- navegação entre abas (Clientes / Valor do Tecido) ----------
+const clientesNav = document.getElementById('clientesNav');
+const viewClientes= document.getElementById('viewClientes');
+const viewTecido  = document.getElementById('viewTecido');
+function setView(v){
+  document.querySelectorAll('.navitem').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.view===v)));
+  const cli = (v === 'clientes');
+  clientesNav.style.display = cli ? 'contents' : 'none';
+  viewClientes.style.display = cli ? '' : 'none';
+  viewTecido.style.display  = cli ? 'none' : '';
+}
+document.querySelectorAll('.navitem').forEach(b=>b.addEventListener('click', ()=>setView(b.dataset.view)));
+
+// ---------- calculadora de tecido ----------
+const cValor=document.getElementById('cValor'), cMetros=document.getElementById('cMetros'),
+      cPeso=document.getElementById('cPeso'), cMid=document.getElementById('cMid'),
+      cResult=document.getElementById('cResult'), cCopy=document.getElementById('cCopy');
+function parseNum(s){
+  s = String(s==null?'':s).trim();
+  if(!s) return NaN;
+  if(s.indexOf(',') >= 0) s = s.replace(/\./g,'').replace(',', '.');
+  return parseFloat(s);
+}
+function fmtBRL(n){ return isFinite(n) ? 'R$ ' + n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
+function fmtKg(n){ return isFinite(n) ? n.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3}) : '—'; }
+let cLast = '';
+function calc(){
+  const kg=parseNum(cValor.value), m=parseNum(cMetros.value), pm=parseNum(cPeso.value);
+  const precoMetro = kg * pm;
+  const pesoUsado  = m * pm;
+  const custo      = kg * m * pm;
+  cMid.innerHTML =
+    `<div class="mcard"><div class="k">Preço do metro</div><div class="v">${fmtBRL(precoMetro)}<span class="unit">/m</span></div></div>`+
+    `<div class="mcard"><div class="k">Peso usado no produto</div><div class="v">${fmtKg(pesoUsado)}<span class="unit">kg</span></div></div>`;
+  cResult.textContent = fmtBRL(custo);
+  cLast = isFinite(custo) ? custo.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+}
+[cValor,cMetros,cPeso].forEach(el=>el.addEventListener('input', calc));
+cCopy.addEventListener('click', ()=>{
+  if(!cLast) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(cLast).then(()=>{ cCopy.textContent='Copiado!'; setTimeout(()=>cCopy.textContent='Copiar valor',1500); }).catch(()=>{});
+  }
+});
+calc();
 
 const root=document.documentElement, tgl=document.getElementById('tgl');
 try{const t=localStorage.getItem('flora-theme'); if(t)root.setAttribute('data-theme',t);}catch(e){}
